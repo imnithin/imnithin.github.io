@@ -90,9 +90,14 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <h2 class="section-heading">Adding Menu button</h2>
+
                     <p>Copy the complete contents from <a href="http://www.tinymce.com/download/download.php">TinyMce-4</a> development package have it in your assets or public folder, it includes tinymce's classes, langs, plugins and other files, scripts and everything you need. </p>
 
-                        <p>Name a button, Assume here I will name as R.design, on click drop down menu with a single item named "menu1" appears, onclick, the content is appended in the editor.</p>
+                    <p>Name a button, here I will name as R.design, on click drop down menu with a single item named "menu1" appears, onclick, the content is appended in the editor, don't forget to include tinymce.min.js</p>
+
+                    <p></p>
 
 <pre>
 tinymce.init({
@@ -103,7 +108,7 @@ tinymce.init({
            text: 'R.Design',
            icon: false,
            menu: [
-           {text: 'menu1 ', onclick: function() {editor.insertContent('menu1');}},
+           {text: 'menu1 ', onclick: function() {editor.insertContent('menu1');}}
            ]
        });
    },
@@ -118,7 +123,46 @@ tinymce.init({
 });
 </pre>
 
-         <h2 class="section-heading">The Final Frontier</h2>
+        <p><blockquote>selector: "textarea"</blockquote> indicates editor will be placed for input type textarea.</p>
+
+
+        <p>Using with Rails</p>
+<pre>
+menu: [
+ <% @array.each do |value| %>
+  {text: '<%= value %>', onclick: function() {editor.insertContent('<%= value %>');}
+ <% end %>
+ ]
+</pre>              
+<h2 class="section-heading">Re-order tool-bar icons, coloring text and background.</h2>
+<p><pre>
+toolbar: "insertfile undo redo"
+toolbar: "undo insertfile redo"
+</pre></p>
+
+    <p>If the text color icon and background coloring is missing, all you need is to add the <b>textcolor</b> into your <b>plugins</b>;[...] first, then use the <b>forecolor and backcolor in the toolbar</b>, so the icon does appear in the editor toolbar.</p>
+
+    All of the things you include/defined in tinymce/plugins/* folder can be used in the tinymce editor.
+
+<p><pre>toolbar: "forecolor backcolor"</pre></p>
+
+         <h2 class="section-heading">Changing table border</h2>
+
+
+<p>File: <b>tinymce/skins/lightgray/content.min.css</b></p>
+
+<p>That has style applied for table.
+<pre>border: 1px dashed #BBBBBB;</pre></p>
+
+Override the default styling, simple and comparatively better than default.
+
+</p><pre>
+.mce-item-table, .mce-item-table td, .mce-item-table th, .mce-item-table caption {    
+  border: 1px solid black;   
+  border-collapse: collapse;
+  font-size: 14px;
+}
+</pre></p>
 
          <p>There can be no thought of finishing for ‘aiming for the stars.’ Both figuratively and literally, it is a task to occupy the generations. And no matter how much progress one makes, there is always the thrill of just beginning.</p>
 
