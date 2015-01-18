@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Clean Blog - Sample Post</title>
+    <title>TinyMce Customization</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -76,7 +76,7 @@
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                         <div class="post-heading">
-                            <h1>Customizing TinyMce Editor 4 also using with Ruby on Rails application.</h1>
+                            <h1>Customizing TinyMce Editor 4, also using with Ruby on Rails application.</h1>
                             <h2 class="subheading">.... early days as a developer</h2>
                             <!-- <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span> -->
                         </div>
@@ -213,10 +213,10 @@ menu: [
     editor.windowManager.open({
         title: 'Paper Margins',
         body: [
-
-            {type: 'textbox', name: 'top', label: 'Margin top (cm)',
-             value: '<%=@report.top if @custom_report.top.present? %>'}
-
+            {
+             type: 'textbox', name: 'top', label: 'Margin top (cm)',
+             value: '<%=@report.top if @custom_report.top.present? %>'
+            }
         ],
         onsubmit: function(e) {
 
@@ -230,7 +230,7 @@ menu: [
 }
 }
 </pre></p>
-<p>Enjoy Customizing <a href="https://github.com/imnithin/tiny_mce_customization">tinymce</a>.</p>
+<p>Enjoy Customizing <a href="https://github.com/imnithin/tiny_mce_customization">tinymce - code</a>.</p>
 
 </div>
 </div>
