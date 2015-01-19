@@ -46,7 +46,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="index.html">Start Bootstrap</a>
+                    <a class="navbar-brand" href="index.html">Start Coding</a>
                 </div>
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
@@ -93,36 +93,35 @@
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-                    <h2 class="section-heading">Adding Menu button</h2>
+                    <h2 class="section-heading">Multiple Database Connection with ActiveRecord</h2>
 
-                    <p>Copy the complete contents from <a href="http://www.tinymce.com/download/download.php">TinyMce-4</a> development package have it in your assets or public folder, it includes tinymce's classes, langs, plugins and other files, scripts and everything you need. </p>
+                    <p>Off-late I see many questions on StackOverflow on multiple database, also quite a number of approaches doing it wrongly, while I have answered a few, here I'm quite briefing about it.</p>
 
-                    <p>Name a button, here I will name as R.design, on click drop down menu with a single item named "menu1" appears, onclick, the content is appended in the editor, don't forget to include tinymce.min.js</p>
+                    <p>Making a connection when necessary and interacting with secondary database is quite a common approach, it isn't safest way.</p>
 
                     <p></p>
-
+database.yml
 <pre>
-tinymce.init({
-   selector: "textarea",
-   setup: function(editor) {
-       editor.addButton('report_design', {
-           type: 'menubutton',
-           text: 'R.Design',
-           icon: false,
-           menu: [
-           {text: 'menu1 ', onclick: function() {editor.insertContent('menu1');}}
-           ]
-       });
-   },
+development:
+ adapter: mysql2
+ encoding: utf8
+ reconnect: true
+ database: [DB name]
+ pool: 5 
+ username: [your username]
+ password: [your password] 
+host: [host name]
 
-   plugins: [
-   "advlist autolink lists link image charmap print preview anchor",
-   "searchreplace visualblocks code fullscreen",
-   "insertdatetime media table contextmenu paste moxiemanager",
-   "emoticons print textcolor"
-   ],
-   toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | emoticons | forecolor backcolor | print | menu  "
-});
+
+secondary:
+ adapter: mysql2
+ encoding: utf8
+ reconnect: true
+ database: [DB name]
+ pool: 5 
+ username: [your username]
+ password: [your password] 
+host: [host name]
 </pre>
 
         <p><blockquote>selector: "textarea"</blockquote> indicates editor will be placed for input type textarea.</p>
