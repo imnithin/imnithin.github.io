@@ -8,8 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="">
 
-    <!-- <meta name="keywords" content="multiple databases using rails, multiple databases using ActiveRecord(AR), set tables dynamically with external database in rails"> -->
-    <!-- <meta name="description" content="multiple databases in ruby on rails with activerecord,  External Database connection with rails, set tables dynamically with external database in rails"> -->
+    <meta name="keywords" content="multiple databases using rails, multiple databases using ActiveRecord(AR), set tables dynamically in rails">
+    <meta name="description" content="one my previous project I dealt with secondary/external database with rails application, which was quite intresting as it was very much dynamic in nature that is I did not have any information available regarding with database">
 
     <title>Multiple Database in Rails</title>
 
@@ -97,141 +97,85 @@
 
                     <p>Off-late I see many questions on StackOverflow on multiple database, also quite a number of approaches doing it wrongly, while I have answered a few, here I'm quite briefing about it.</p>
 
-                    <p>Making a connection when necessary and interacting with secondary database is quite a common approach, it isn't safest way.</p>
+                    <p>Making a connection when necessary and interacting with secondary database is quite a common approach and poor approach.</p>
 
-                    <p></p>
+                    <p><h2 class="section-heading">Keeping the configurations at one best place.</h2></p>
 database.yml
 <pre>
 development:
- adapter: mysql2
- encoding: utf8
- reconnect: true
+ adapter: [ adapter ]
  database: [DB name]
- pool: 5 
  username: [your username]
  password: [your password] 
-host: [host name]
-
+ host: [host name]
 
 secondary:
- adapter: mysql2
- encoding: utf8
- reconnect: true
- database: [DB name]
- pool: 5 
- username: [your username]
- password: [your password] 
-host: [host name]
+ adapter: [ adapter ]
+ database: [ DB name ]
+ username: [ username ]
+ password: [ password ] 
+ host: [ host name ]
 </pre>
 
-        <p><blockquote>selector: "textarea"</blockquote> indicates editor will be placed for input type textarea.</p>
+        <p>This keeps the secondary database connection open, which could be a good thing for performance as well allows you to use ActiveRecord of Rails.</p>
 
+<p><h2 class="section-heading">Then comes the connection with AR.</h2></p>
 
-        <p>Using with Rails</p>
 <pre>
-menu: [
- <% @array.each do |value| %>
-  {text: '<%= value %>', onclick: function() {editor.insertContent('<%= value %>');}
- <% end %>
- ]
-</pre>              
-<h2 class="section-heading">Re-order tool-bar icons, coloring text and background.</h2>
-<p><pre>
-toolbar: "insertfile undo redo"
-toolbar: "undo insertfile redo"
-</pre></p>
+Class ExternalDatabaseConnection < ActiveRecord::Base
+   establish_connection(:secondary)
+   self.table_name = "the_table"
+end
+</pre>
 
-    <p>If the text color icon and background coloring is missing, all you need is to add the <b>textcolor</b> into your <b>plugins</b>;[...] first, then use the <b>forecolor and backcolor in the toolbar</b>, so the icon does appear in the editor toolbar.</p>
+<p><h2 class="section-heading">Usage</h2></p>
 
-    All of the things you include/defined in tinymce/plugins/* folder can be used in the tinymce editor.
-
-<p><pre>toolbar: "forecolor backcolor"</pre></p>
-
-         <h2 class="section-heading">Changing table border</h2>
+<pre>
+ExternalDatabaseConnection.first
+ExternalDatabaseConnection.create(.......)
+</pre>
 
 
-<p>File: <b>tinymce/skins/lightgray/content.min.css</b></p>
+<p><h2 class="section-heading">Dynamic way of table setting</h2></p>
+<p>In case when table is dynamically set by user. In class you must have to use <p>
 
-<p>That has style applied for table.
-<pre>border: 1px dashed #BBBBBB;</pre></p>
+<pre>
+self.abstract_class = true
+attr_protected
+</pre>
 
-Override the default styling, simple and comparatively better than default.
+<p><blockquote>self.abstract_class</blockquote></p>
+<p>This tells ActiveRecord that it shouldn’t look for a table to go with that class</p>
 
-</p><pre>
-.mce-item-table, .mce-item-table td, .mce-item-table th, .mce-item-table caption {    
-  border: 1px solid black;   
-  border-collapse: collapse;
-  font-size: 14px;
-}
-</pre></p>
+<p><blockquote>attr_protected</blockquote></p>
+<p>This will permit 'all' attributes related to a table without defining it manually, in Rails 4, there must be different way.</p>
 
-         <h2 class="section-heading">Sub-Menu items</h2>
+<p><blockquote>ExternalDatabaseConnection.table_name = "table1"</blockquote></p>
+<p>Set whenever necessary and object is ready to use.</p>
+
+<p><h2 class="section-heading">The Problem with dynamic way.</h2></p>
+
+<p>Dynamic way of changing table name, Consider..</p>
 
 <p><pre>
-menu: [
- {
- text:'Menu item', menu:[ {text:'sub1',value:'val1'},{text:'sub2',value:'val2'}], 
- onclick: function() {editor.insertContent('<%= "submenu" %>');} 
- }
-]
+ExternalDatabaseConnection.table_name = "users"
+ExternalDatabaseConnection.column_names => ["name", "location", "email", "verified"]
+
+ExternalDatabaseConnection.table_name = "posts"
+ExternalDatabaseConnection.column_names => ["name", "location", "email", "verified"]
 </pre></p>
 
-<p>Using along with rails, onclick of a submenu item, item insertion into editor's textarea space.</p>
-<p><pre>
-menu: [
- { 
-   text:'Student Basic Data', menu:[<% @object.each do |data| %>{text:'<%= data %>', 
-   onclick: function() {editor.insertContent('<%= data %>');}},<% end %>] 
- }
-]
-</pre></p>
+<p>You see the problem there, its shows the attributes of initially set table, hence you no longer hold the instance of new object.</p>
 
-<h2 class="section-heading">Window Manager</h2>
-<p><pre>
-{
-    text:'Name', onclick: function()
-{
-    editor.windowManager.open({
-        title: 'Paper Margins',
-        body: [
-            {type: 'textbox', name: 'first', label: 'first name',value: ''},
-            {type: 'textbox', name: 'last', label: 'last name', value: ''}
-        ],
-        onsubmit: function(e) {
-            // Insert content when the window form is submitted
-            editor.insertContent('First Name' + e.data.first);
-            editor.insertContent('Last Name' + e.data.last);
-        }
-    });
-}
-}
-</pre></p>
+<p><h2 class="section-heading">The Fix.</h2></p>
 
-<p>Using along rails</p>
-<p><pre>
-{text:'Margins', onclick: function()
-{
-    editor.windowManager.open({
-        title: 'Paper Margins',
-        body: [
-            {
-             type: 'textbox', name: 'top', label: 'Margin top (cm)',
-             value: '<%=@report.top if @custom_report.top.present? %>'
-            }
-        ],
-        onsubmit: function(e) {
+<pre>
+ExternalDatabaseConnection.reset_column_information 
+</pre>
 
-            <%= remote_function(
-            :url => {:controller=>"controller",:action => "action"},
-            :with => "'margin_top=' + e.data.top " )
-            %>
+<p>To override the previous object - table information, reset_column_information method on the class object must be called before setting new table.</p>
 
-        }
-    });
-}
-}
-</pre></p>
-<p>Enjoy Customizing <a href="https://github.com/imnithin/tiny_mce_customization">tinymce - code</a>.</p>
+
 
 </div>
 </div>

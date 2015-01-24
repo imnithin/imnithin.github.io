@@ -8,10 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="">
 
-    <meta name="keywords" content="multiple databases using rails, multiple databases using ActiveRecord(AR), set tables dynamically in rails">
-    <meta name="description" content="one my previous project I dealt with secondary/external database with rails application, which was quite intresting as it was very much dynamic in nature that is I did not have any information available regarding with database">
+    <meta name="keywords" content="csv download in rails,csv download using delayed_job,background process, performance improvement, csv prepare and download">
+    <meta name="description" content="When you have count of records to download its easy to serve a static file, in-case when records are dynamic and size of records are high ">
 
-    <title>Multiple Database in Rails</title>
+    <title>CSV download using Delayed Job</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -78,8 +78,8 @@
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                         <div class="post-heading">
-                            <h1>Dealing with multiple database in Rails.</h1>
-                            <h2 class="subheading">... easy as you see</h2>
+                            <h1>CSV download using Delayed Job.</h1>
+                            <h2 class="subheading">.... the wow feature</h2>
                             <!-- <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span> -->
                         </div>
                     </div>
@@ -89,97 +89,7 @@
 
         <!-- Post Content -->
         <article>
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-
-                    <h2 class="section-heading">Multiple Database Connection with ActiveRecord</h2>
-
-                    <p>Off-late I see many questions on StackOverflow on multiple database, also quite a number of approaches doing it wrongly, while I have answered a few, here I'm quite briefing about it.</p>
-
-                    <p>Making a connection when necessary and interacting with secondary database is quite a common approach and poor approach.</p>
-
-                    <p><h2 class="section-heading">Keeping the configurations at one best place.</h2></p>
-database.yml
-<pre>
-development:
- adapter: [ adapter ]
- database: [DB name]
- username: [your username]
- password: [your password] 
- host: [host name]
-
-secondary:
- adapter: [ adapter ]
- database: [ DB name ]
- username: [ username ]
- password: [ password ] 
- host: [ host name ]
-</pre>
-
-        <p>This keeps the secondary database connection open, which could be a good thing for performance as well allows you to use ActiveRecord of Rails.</p>
-
-<p><h2 class="section-heading">Then comes the connection with AR.</h2></p>
-
-<pre>
-Class ExternalDatabaseConnection < ActiveRecord::Base
-   establish_connection(:secondary)
-   self.table_name = "the_table"
-end
-</pre>
-
-<p><h2 class="section-heading">Usage</h2></p>
-
-<pre>
-ExternalDatabaseConnection.first
-ExternalDatabaseConnection.create(.......)
-</pre>
-
-
-<p><h2 class="section-heading">Dynamic way of table setting</h2></p>
-<p>In case when table is dynamically set by user. In class you must have to use <p>
-
-<pre>
-self.abstract_class = true
-attr_protected
-</pre>
-
-<p><blockquote>self.abstract_class</blockquote></p>
-<p>This tells ActiveRecord that it shouldn’t look for a table to go with that class</p>
-
-<p><blockquote>attr_protected</blockquote></p>
-<p>This will permit 'all' attributes related to a table without defining it manually, in Rails 4, there must be different way.</p>
-
-<p><blockquote>ExternalDatabaseConnection.table_name = "table1"</blockquote></p>
-<p>Set whenever necessary and object is ready to use.</p>
-
-<p><h2 class="section-heading">The Problem with dynamic way.</h2></p>
-
-<p>Dynamic way of changing table name, Consider..</p>
-
-<p><pre>
-ExternalDatabaseConnection.table_name = "users"
-ExternalDatabaseConnection.column_names => ["name", "location", "email", "verified"]
-
-ExternalDatabaseConnection.table_name = "posts"
-ExternalDatabaseConnection.column_names => ["name", "location", "email", "verified"]
-</pre></p>
-
-<p>You see the problem there, its shows the attributes of initially set table, hence you no longer hold the instance of new object.</p>
-
-<p><h2 class="section-heading">The Fix.</h2></p>
-
-<pre>
-ExternalDatabaseConnection.reset_column_information 
-</pre>
-
-<p>To override the previous object - table information, reset_column_information method on the class object must be called before setting new table.</p>
-
-
-
-</div>
-</div>
-</div>
+            Content yet to publish....
 </article>
 
 <hr>
