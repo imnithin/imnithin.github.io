@@ -9,7 +9,7 @@
     <meta name="author" content="">
 
     <meta name="keywords" content="multiple databases using rails, multiple databases using ActiveRecord(AR), set tables dynamically in rails">
-    <meta name="description" content="one my previous project I dealt with secondary/external database with rails application, which was quite intresting as it was very much dynamic in nature that is I did not have any information available regarding with database">
+    <meta name="description" content="one my previous project I dealt with secondary/external database with rails application, which was quite interesting as it was very much dynamic in nature that is I did not have any information available regarding with database">
 
     <title>Multiple Database in Rails</title>
 
@@ -58,9 +58,9 @@
                         <li>
                             <a href="about.html">About</a>
                         </li>
-                        <li>
+<!--                         <li>
                             <a href="post.html">Sample Post</a>
-                        </li>
+                        </li> -->
                         <li>
                             <a href="contact.html">Contact</a>
                         </li>
@@ -97,7 +97,7 @@
 
                     <p>Off-late I see many questions on StackOverflow on multiple database, also quite a number of approaches doing it wrongly, while I have answered a few, here I'm quite briefing about it.</p>
 
-                    <p>Making a connection when necessary and interacting with secondary database is quite a common approach and poor approach.</p>
+                    <p>Making a connection when necessary and interacting with secondary database is quite a common approach and poor way of dealing with.</p>
 
                     <p><h2 class="section-heading">Keeping the configurations at one best place.</h2></p>
 database.yml
@@ -148,10 +148,10 @@ attr_protected
 <p>This tells ActiveRecord that it shouldn’t look for a table to go with that class</p>
 
 <p><blockquote>attr_protected</blockquote></p>
-<p>This will permit 'all' attributes related to a table without defining it manually, in Rails 4, there must be different way.</p>
+<p>This will permit <b>all</b> attributes related to a table without defining it manually, in Rails 4, there must be different way.</p>
 
 <p><blockquote>ExternalDatabaseConnection.table_name = "table1"</blockquote></p>
-<p>Set whenever necessary and object is ready to use.</p>
+<p><b>ExternalDatabaseConnection</b> is ready to serve as in AR object, with the related table set.</p>
 
 <p><h2 class="section-heading">The Problem with dynamic way.</h2></p>
 

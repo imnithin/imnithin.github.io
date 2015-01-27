@@ -9,7 +9,7 @@
     <meta name="author" content="">
 
     <meta name="keywords" content="csv download in rails,csv download using delayed_job,background process, performance improvement, csv prepare and download">
-    <meta name="description" content="When you have count of records to download its easy to serve a static file, in-case when records are dynamic and size of records are high ">
+    <meta name="description" content="When you have count of records to download its easy to serve a static file, in-case when records are dynamic and size of records are high it quite takes your RAM time and doesn't accepts requests in the mean time, to overcome I used delayed job gem and nailed the feature down.">
 
     <title>CSV download using Delayed Job</title>
 
@@ -58,9 +58,9 @@
                         <li>
                             <a href="about.html">About</a>
                         </li>
-                        <li>
+<!--                         <li>
                             <a href="post.html">Sample Post</a>
-                        </li>
+                        </li> -->
                         <li>
                             <a href="contact.html">Contact</a>
                         </li>
@@ -89,7 +89,133 @@
 
         <!-- Post Content -->
         <article>
-        Yet to publish
+    `     <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <p>One of the interesting tasks I have dealt with...</p>
+
+                    <h2 class="section-heading">CSV - pepare and download using Delayed Job Gem.</h2>
+
+
+                    <p>When you have count of records its easy to serve a static file, in-case when records are dynamic and size of records are high it quite takes your RAM time and doesn't accepts requests during the preparation of CSV file, to overcome I used delayed job gem and nailed the feature down. Here is it how I went through...</p>
+
+                    <p><h2 class="section-heading">The usual way - Previous method.</h2></p>
+
+<pre>
+def download
+  require "csv"
+  csv_string = CSV.generate do |csv|
+    csv << ["ID",....]
+    @search.each do |site|
+      csv << [site.id, ........]
+    end
+  end
+  send_data csv_string,
+            :type => 'text/csv',
+            :filename => '_sites_list.csv',
+            :disposition => 'attachment'
+end
+</pre>
+
+        <p>There were large number of columns, records were 50k+, when requested for all reords(sites) it used hold up my system, so much was the load.</p>
+
+<p>After research and research(that is googling and ..ing) I thought to myself gather yourself and deal with it, you will finda way.</p>
+
+<p><h2 class="section-heading">The delayed job gem.</h2></p>
+
+<p>Having not dealt with background processes before, started with railscasts on delayed job</p>
+
+<p>I fixed it in mind how can this be done, and I how have to go about, but easier said than done.</p>
+
+<p>I would make use of delayed job and prepare the csv file as in background process, just like that the part was done and dusted.</p>
+
+<pre>
+def download
+  ExportCsv.new(@search.to_a.map(&:id), current_user.id).delay.perform
+end
+</pre>
+
+<p>The link/button to download method should be an AJAX call.</p>
+
+<p>The custom class for delayed job operations in lib folder.</p>
+
+export_csv.rb
+<pre>
+class ExportCsv < Struct.new(:site_ids, :user_id)
+
+  def perform
+    require "csv"
+    User.find(user_id).update_attributes(xls_download: false) # pre-run, making sure.
+    sites = Site.where(id: site_ids)
+    CSV.open("tmp/sites_xls/#{user_id}.csv", "w+") do |csv|
+      csv << ["ID", .....]
+      sites.each do |site|
+        csv << [site.id, .....]
+      end
+    end
+  end
+
+  def after(job)
+    User.find(user_id).update_attributes(xls_download: true)
+  end
+
+  handle_asynchronously :perform
+
+end
+</pre>
+<p> As we cannot use session objects I had to create a new attribute <b>xls_download</b> for users table.</p>
+<p>Attribute will be set to true in <b>after</b> method provided by the delayed job, once process of <b>perform</b> method is complete.</p>
+
+<p>So the preparation happens at background so there is no holding up server or my development machine ;).</p>
+
+<p><h2 class="section-heading">The poll function.</h2></p>
+
+<p>But why?</p>
+
+<p>Once the csv preparation is complete the file seems to be in the application but how to does it inform you its ready and has completed the process of writing to CSV</p>
+<!-- <p>You see I use ERB.</p> -->
+
+download.js.erb
+<pre>
+  alert('Preparing file to download, you will be notified once its complete...');
+  timeout('<%= SOME_DELAY %>');
+</pre>
+
+<p>So what lies inside timeout function.</p>
+
+<p>So how does system notify the requestee about the preparation and completion of file .</p>
+
+<pre>
+function timeout(time) {
+  setTimeout(function() {
+    $.ajax({ url: "/controller/check_if_ready?",
+        type : 'GET', 
+        dataType : 'json',
+        success: function(response)
+        {
+            if(response.value === "success") {
+                var value = confirm("File ready to download ?");
+                if (value == true) {
+                  window.location="/sites/download_csv.csv";
+              } else if(value == false) { 
+                    $.ajax({ url: "/sites/remove_file"})
+               }
+          } 
+          else 
+          {
+           timeout('4000') // wait 4 seconds 
+       }
+   },
+});
+}, time);
+}
+</pre>
+
+<p><h2 class="section-heading">to be contd....</h2></p>
+
+</div>
+</div>
+</div>
         </article>
 
 <hr>
