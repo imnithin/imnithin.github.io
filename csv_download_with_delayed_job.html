@@ -94,10 +94,10 @@
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <p>One of the interesting tasks I have dealt with...</p>
 
-                    <h2 class="section-heading">CSV - pepare and download using Delayed Job Gem.</h2>
+                    <h2 class="section-heading">CSV - prepare and download using Delayed Job Gem.</h2>
 
 
-                    <p>When you have count of records its easy to serve a static file, in-case when records are dynamic and size of records are high it quite takes your RAM time and doesn't accepts requests during the preparation of CSV file, to overcome I used delayed job gem and nailed the feature down. Here is it how I went through...</p>
+                    <p>When you have count of records its easy to serve a static file, in-case when records are dynamic and size of records are high it quite takes your RAM time and doesn't accepts other requests during the preparation of CSV file, to overcome I used delayed job gem and nailed the feature down. Here is it how I went through...</p>
 
                     <p><h2 class="section-heading">The usual way - Previous method.</h2></p>
 
@@ -117,15 +117,15 @@ def download
 end
 </pre>
 
-        <p>There were large number of columns, records were 50k+, when requested for all reords(sites) it used hold up my system, so much was the load.</p>
+        <p>There were large number of columns, records were 50k+ when requested for all records(sites) it holds up my system, so much was the load.</p>
 
 <p>After research and research(that is googling and ..ing) I thought to myself gather yourself and deal with it, you will finda way.</p>
 
 <p><h2 class="section-heading">The delayed job gem.</h2></p>
 
-<p>Having not dealt with background processes before, started with railscasts on delayed job</p>
+<p>Having not dealt with background processes before, started with railscasts on delayed job.</p>
 
-<p>I fixed it in mind how can this be done, and I how have to go about, but easier said than done.</p>
+<p>Well having fixed it in my mind how to go about this task, I started., but easier said than done.</p>
 
 <p>I would make use of delayed job and prepare the csv file as in background process, just like that the part was done and dusted.</p>
 
@@ -172,7 +172,7 @@ end
 
 <p>But why?</p>
 
-<p>Once the csv preparation is complete the file seems to be in the application but how to does it inform you its ready and has completed the process of writing to CSV</p>
+<p>Once the csv preparation is complete the file seems to be in the application path but how to does it inform you its ready and has completed the process of writing to CSV.</p>
 <!-- <p>You see I use ERB.</p> -->
 
 download.js.erb
@@ -181,9 +181,7 @@ download.js.erb
   timeout('<%= SOME_DELAY %>');
 </pre>
 
-<p>So what lies inside timeout function.</p>
-
-<p>So how does system notify the requestee about the preparation and completion of file .</p>
+<p>So what lies inside timeout function, how does system notify its ready to serve the file.</p>
 
 <pre>
 function timeout(time) {
@@ -196,9 +194,9 @@ function timeout(time) {
             if(response.value === "success") {
                 var value = confirm("File ready to download ?");
                 if (value == true) {
-                  window.location="/sites/download_csv.csv";
+                  window.location="/controller/download_csv.csv";
               } else if(value == false) { 
-                    $.ajax({ url: "/sites/remove_file"})
+                    $.ajax({ url: "/controller/remove_file"})
                }
           } 
           else 
@@ -211,7 +209,40 @@ function timeout(time) {
 }
 </pre>
 
-<p><h2 class="section-heading">to be contd....</h2></p>
+<p><h2 class="section-heading">The AJAX call.</h2></p>
+<p>check_if_ready?</p>
+<pre>
+def check_if_ready?
+  if current_user.set_xls_download? && File.exist?(@file_path)
+    render json: { value: "success" }
+  else
+    render json: { value: nil }
+  end
+end
+</pre>
+
+<p><h2 class="section-heading">Navigation to different sources.</h2></p>
+
+<p>It seems everything's fine but what if the user navigates different pages.</p>
+
+<p>Call the function in whichever <b>layout</b> necessary.</p>
+<pre>
+%script
+    - if current_user.set_xls_download?
+      timeout('#{DELAY}'); 
+</pre>
+
+<p><h2 class="section-heading">Final few points</h2></p>
+<ul>
+<li>Delay value can be configured based on count of records to reduce number of ajax calls.</li>
+<li>Also on navigation to different pages you might also want to have smaller delay.</li>
+<li>Delete the file afer the download, which I have eliminated to show.</li>
+<li>The Ajax call may get into loop and request may be endless, counter value can be used to fix this and kill the request.</li>
+<li>When multiple files are requested to download? I have proceeded by allowing user to make one download request at a time. You might also want to handle this situation.</li>
+<li>User requests and logouts. Oh what happens?</li>
+</ul>
+
+<p>Finally I'm done with this one, there are some pros and cons I mostly have covered them all in my points. I would love to have your feedback. Oh no comment section up here.</p>
 
 </div>
 </div>
