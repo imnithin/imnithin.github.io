@@ -228,18 +228,19 @@ end
 <p>Call the function in whichever <b>layout</b> necessary.</p>
 <pre>
 %script
-    - if current_user.set_xls_download?
+    - if session[:download]
       timeout('#{DELAY}'); 
 </pre>
 
+<p>Use a flag attribute to make poll calls, once the download is complete you can toggle back to nil/false .</p>
+
 <p><h2 class="section-heading">Final few points</h2></p>
 <ul>
-<li>Delay value can be configured based on count of records to reduce number of ajax calls.</li>
-<li>Also on navigation to different pages you might also want to have smaller delay.</li>
-<li>Delete the file afer the download, which I have eliminated to show.</li>
-<li>The Ajax call may get into loop and request may be endless, counter value can be used to fix this and kill the request.</li>
+<li>Delay value can be configured based on count of records to reduce number of ajax calls. But on navigation to different pages you might also want to have smaller delay, as user may make another request within that delay value.</li>
+<li>Delete the file and reset values afer the download.</li>
 <li>When multiple files are requested to download? I have proceeded by allowing user to make one download request at a time. You might also want to handle this situation.</li>
-<li>User requests and logouts. Oh what happens?</li>
+<li>Important: On Capistrano deployment process, you will have to restart the delayed job process and make sure no download is in progress. If not handled -
+The Ajax call may get into loop and request may be endless, counter value can be used to fix this and kill the request.</li>
 </ul>
 
 <p>Finally I'm done with this one, there are some pros and cons I mostly have covered them all in my points. I would love to have your feedback. Oh no comment section up here.</p>
