@@ -8,8 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="">
 
-    <meta name="keywords" content="csv download in rails,csv download using delayed_job,background process, performance improvement, csv prepare and download">
-    <meta name="description" content="When you have count of records to download its easy to serve a static file, in-case when records are dynamic and size of records are high it quite takes your RAM time and doesn't accepts requests in the mean time, to overcome I used delayed job gem and nailed the feature down.">
+    <meta name="keywords" content="csv download in rails, background process, performance improvement, csv prepare and download, csv prepare and download using delayed job">
+    <meta name="description" content="Serving a static file is easy, in-case when records are dynamic due to search filters when requested for downloading it and doesn't accepts other requests until the download is complete and load will be high, to overcome this I used delayed job gem and nailed the feature down.">
 
     <title>CSV download using Delayed Job</title>
 
@@ -97,7 +97,7 @@
                     <h2 class="section-heading">CSV - prepare and download using Delayed Job Gem.</h2>
 
 
-                    <p>Serving a static file is easy, when search filters are applied and processing large number of records and writing to a file  will add up load on server and the user experience isn't that good, to overcome, I used delayed job gem and nailed the feature down. Here is it how I went through...</p>
+                    <p>Serving a static file is easy, but when search filters are applied and processing large number of records and writing to a file  will add up load on server and the user experience isn't that good, to overcome, I used delayed job gem and nailed the feature down. Here's how' I went through...</p>
 
                     <p><h2 class="section-heading">The usual way - Previous method.</h2></p>
 
@@ -233,6 +233,12 @@ end
 </pre>
 
 <p>Use a flag attribute to make poll calls, once the download is complete you can toggle back to nil/false .</p>
+
+<p><h2 class="section-heading">KickStart the background process.</h2></p>
+
+<pre>
+RAILS_ENV=environment nice -n 15 script/delayed_job -n 3 restart
+</pre>
 
 <p><h2 class="section-heading">Final few points</h2></p>
 <ul>
