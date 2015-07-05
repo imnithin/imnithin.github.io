@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="">
+
+    <meta name="keywords" content="debugging, cron job, whenever, debugging cron job, crontab, capistrano, whenever task">
+    <meta name="description" content="debugging cron job tasks with linux/ubuntu/centos when used with whenever and a capistrano task to automate things during deployment">
+
+    <title>Debugging Cron Job</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/clean-blog.min.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    </head>
+
+    <body>
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header page-scroll">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="index.html">Start Coding</a>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="index.html">Home</a>
+                        </li>
+                        <li>
+                            <a href="about.html">About</a>
+                        </li>
+<!--                         <li>
+                            <a href="post.html">Sample Post</a>
+                        </li> -->
+                        <li>
+                            <a href="contact.html">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- /.navbar-collapse -->
+            </div>
+            <!-- /.container -->
+        </nav>
+
+        <!-- Page Header -->
+        <!-- Set your background image for this header on the line below. -->
+        <header class="intro-header" style="background-image: url('img/post-bg.jpg')">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                        <div class="post-heading">
+                            <h1>Debugging Cron Job.</h1>
+                            <h2 class="subheading">Is your program running at scheduled time?</h2>
+                            <!-- <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Post Content -->
+        <article>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+
+                    <h2 class="section-heading">First things first.</h2>
+
+                    <p><b>What is cron?</b> Wiki says - "The software utility Cron is a time-based job scheduler in Unix-like computer operating systems. People who set up and maintain software environments use cron to schedule jobs (commands or shell scripts) to run periodically at fixed times, dates, or intervals"</p>
+
+                    <p><b>What is crontab?</b> It's a file, which contains information about cron job, maintains seperate files for individual users. It is not indended to edit directly.</p>
+
+                    <p>If you are starting to wonder if this is new to you, checkout <a href="http://railscasts.com/episodes?utf8=%E2%9C%93&search=cron+jobs"> railscasts</a> and <a href="https://github.com/javan/whenever"> whenever.</a></p>
+
+                    <p><h2 class="section-heading">Cron Job and Whenever.</h2></p>
+
+<p>Consider an example. </p>
+
+schedule.rb
+<pre>
+set :output, "/application/current/log/cron_log.log"
+every 5.minutes do
+  runner "MyModel.method"
+  command 'date'
+end
+</pre>
+
+<p>Writing to custom log would help us debug easily, <a href="https://github.com/javan/whenever/wiki/Output-redirection-aka-logging-your-cron-jobs">for more.</a><b><br/> command 'date'</b> executes current time set on machine, and will be written to cron_log file</p>
+
+<p><h2 class="section-heading">Integration with Capistrano.</h2></p>
+
+<p>For deployment purpose I have recently used Capistrano 3 also has integration for Whenever check this out <a href="https://github.com/imnithin/capistrano3">github.com/imnithin/capistrano3</a></p>
+
+After this, on every deploy crontab file will be updated.
+
+<p><h2 class="section-heading">Crontab file</h2></p>
+
+<p>∴ crontab -l</p>
+
+<pre>
+# Begin Whenever generated tasks for: user_env
+PATH=.......
+
+0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'date >> /home/app_name/current/log/cron_log.log 2>&1'
+
+0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'cd /home/app_name/releases/RELEASE_ID && script/rails runner -e environment '\''MyModel.method'\'' >> /home/app_name/current/log/cron_log.log 2>&1'
+
+# End Whenever generated tasks for: user_env
+</pre>
+
+<p><b>Note:</b> The RELEASE_ID here will be pointing to latest release, which will be current folder(symblinked). If your crontab has repeatatively listed same task, which might be appending over on every deployment, then your server will be overloaded and will freeze and web server may not respond to any request.</p>
+
+<p><h2 class="section-heading">Useful commands to debug.</h2></p>
+
+<p>There exists a syslog file path:<br/>
+<b> /var/log/syslog</b> (Ubuntu).<br/>
+<b>/var/log/cron</b> (CentOs).<br/>
+where you can monitor if your cron is running or not.</p>
+
+<ul>
+<li>whenever --help</li>
+<li>crontab -l   #to view and check for duplicates</li>
+<li>crontab -e   #to edit</li>
+<li>crontab -r   #to clear/delete user's crontab</li>
+</ul>
+
+<p>So that's it about Whenever and Cron, hope you find it useful.</p>
+
+</div>
+</div>
+</div>
+</article>
+
+<hr>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <li>
+                        <a href="https://twitter.com/imnithink">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.facebook.com/imnithink/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/imnithin">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted">Copyright &copy; Your Website 2014</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="js/jquery.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

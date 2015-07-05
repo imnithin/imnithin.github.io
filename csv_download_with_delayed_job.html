@@ -242,7 +242,7 @@ RAILS_ENV=environment nice -n 15 script/delayed_job -n 3 restart
 
 <p><h2 class="section-heading">Final few points</h2></p>
 <ul>
-<li>Delay value can be configured based on count of records to reduce number of ajax calls. But on navigation to different pages you might also want to have smaller delay, as there can be another request within that delay value. Having a global set timer is best option.</li>
+<li>Delay value can be configured based on count of records to reduce number of ajax calls. But on navigation to different pages(from user) you might also want to have smaller delay, as there can be another request within that delay value. Having a count down timer is a best option.</li>
 <li>Delete the file and reset values afer the download.</li>
 <li>When multiple files are requested to download? I have proceeded by allowing user to make one download request at a time. You might also want to handle this situation.</li>
 <li>Important: On Capistrano deployment process, you will have to restart the delayed job process and make sure no download is in progress. If not handled -
