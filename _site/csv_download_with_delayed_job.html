@@ -8,8 +8,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="">
 
-    <meta name="keywords" content="csv download in rails,csv download using delayed_job,background process, performance improvement, csv prepare and download">
-    <meta name="description" content="When you have count of records to download its easy to serve a static file, in-case when records are dynamic and size of records are high it quite takes your RAM time and doesn't accepts requests in the mean time, to overcome I used delayed job gem and nailed the feature down.">
+    <meta name="keywords" content="csv download in rails, background process, performance improvement, csv prepare and download, csv prepare and download using delayed job">
+    <meta name="description" content="Serving a static file is easy, in-case when records are dynamic due to search filters when requested for downloading it and doesn't accepts other requests until the download is complete and load will be high, to overcome this I used delayed job gem and nailed the feature down.">
 
     <title>CSV download using Delayed Job</title>
 
@@ -97,7 +97,7 @@
                     <h2 class="section-heading">CSV - prepare and download using Delayed Job Gem.</h2>
 
 
-                    <p>When you have count of records its easy to serve a static file, in-case when records are dynamic and size of records are high it quite takes your RAM time and doesn't accepts other requests during the preparation of CSV file, to overcome I used delayed job gem and nailed the feature down. Here is it how I went through...</p>
+                    <p>Serving a static file is easy, but when search filters are applied and processing large number of records and writing to a file  will add up load on server and the user experience isn't that good, to overcome, I used delayed job gem and nailed the feature down. Here's how' I went through...</p>
 
                     <p><h2 class="section-heading">The usual way - Previous method.</h2></p>
 
@@ -117,7 +117,7 @@ def download
 end
 </pre>
 
-        <p>There were large number of columns, records were 50k+ when requested for all records(sites) it holds up my system, so much was the load.</p>
+        <p>Table size was huge records around 50k+ when requested for all records(sites information here) it holds up my system, so much was the load.</p>
 
 <p>After research and research(that is googling and ..ing) I thought to myself gather yourself and deal with it, you will finda way.</p>
 
@@ -234,13 +234,20 @@ end
 
 <p>Use a flag attribute to make poll calls, once the download is complete you can toggle back to nil/false .</p>
 
+<p><h2 class="section-heading">KickStart the background process.</h2></p>
+
+<pre>
+RAILS_ENV=environment nice -n 15 script/delayed_job -n 3 restart
+</pre>
+
 <p><h2 class="section-heading">Final few points</h2></p>
 <ul>
-<li>Delay value can be configured based on count of records to reduce number of ajax calls. But on navigation to different pages you might also want to have smaller delay, as user may make another request within that delay value.</li>
+<li>Delay value can be configured based on count of records to reduce number of ajax calls. But on navigation to different pages(from user) you might also want to have smaller delay, as there can be another request within that delay value. Having a count down timer is a best option.</li>
 <li>Delete the file and reset values afer the download.</li>
 <li>When multiple files are requested to download? I have proceeded by allowing user to make one download request at a time. You might also want to handle this situation.</li>
 <li>Important: On Capistrano deployment process, you will have to restart the delayed job process and make sure no download is in progress. If not handled -
 The Ajax call may get into loop and request may be endless, counter value can be used to fix this and kill the request.</li>
+<li>If user requests for a download and closes the session, it should not be a concern of method call getting into loop, as we have handled calling of Javascript function based on session value.</li>
 </ul>
 
 <p>Finally I'm done with this one, there are some pros and cons I mostly have covered them all in my points. I would love to have your feedback. Oh no comment section up here.</p>
