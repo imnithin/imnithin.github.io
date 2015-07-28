@@ -141,9 +141,12 @@ PATH=.......
 
 <p><h2 class="section-heading">Useful commands to debug.</h2></p>
 
-<p>There exists a syslog file path:<br/>
-<b> /var/log/syslog</b> (Ubuntu).<br/>
+<p>There exists a log file path for most activities on linux:<br/><br/>
+<b>/var/log/syslog</b> (Ubuntu).<br/>
 <b>/var/log/cron</b> (CentOs).<br/>
+<b>service cron status</b><br/>
+<br/>
+
 where you can monitor if your cron is running or not.</p>
 
 <ul>
@@ -151,6 +154,7 @@ where you can monitor if your cron is running or not.</p>
 <li>crontab -l   #to view and check for duplicates</li>
 <li>crontab -e   #to edit</li>
 <li>crontab -r   #to clear/delete user's crontab</li>
+<li>sudo service cron restart #although not necessarily to be used</li>
 </ul>
 
 <p>So that's it about Whenever and Cron, hope you find it useful.</p>
