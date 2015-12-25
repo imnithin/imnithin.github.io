@@ -95,45 +95,36 @@
 
                     <h2 class="section-heading">Prerequisite</h2>
 
-                    <p>ElasticSearch - FullText search engine.</p>
-                    <p>LogStash - Get insights of input, filters and output: https://youtu.be/RuUFnog29M4</p>
+                    <p>Elasticsearch - FullText search engine.</p>
+                    <p>Logstash - Store log data and indexing.</p>
+                    <p>Get insights of input, filters and output: -</p>
+
+                    <iframe width="500" height="345"src="http://www.youtube.com/embed/RuUFnog29M4"></iframe>
+
                     <p>Kibana - Awesome visual dashboard.</p>
  
 
-                    <p><h2 class="section-heading">Keeping the configurations at one best place.</h2></p>
-database.yml
-<pre>
-development:
- adapter: [ adapter ]
- database: [DB name]
- username: [your username]
- password: [your password] 
- host: [host name]
+                    <p><h2 class="section-heading">Download ELK</h2></p>
 
-secondary:
- adapter: [ adapter ]
- database: [ DB name ]
- username: [ username ]
- password: [ password ] 
- host: [ host name ]
-</pre>
 
-        <p>This keeps the secondary database connection open, which could be a good thing for performance as well allows you to use ActiveRecord of Rails.</p>
+        <p>Checkout <a href="https://www.elastic.co/products">Products of Elastic</a> </p>
 
-<p><h2 class="section-heading">Then comes the connection with AR.</h2></p>
+<p>Step1: Install Elasticsearch and automatically start during bootup. </p>
+<p>Step2: Install Logstash and download all the plugins and their set-up.</p>
+<p>Step3: Download Kibana files.</p>
+
+<p>Complete information <a href="https://www.elastic.co/downloads">https://www.elastic.co/downloads</a></p>
+
+        <p><h2 class="section-heading">Ruby Gem</h2></p>
+        <p>gem 'logstasher' <a href="https://github.com/shadabahmed/logstasher">https://github.com/shadabahmed/logstasher</a></p>
+        <p>Configure the Rails environment to be monitored accordingly</p> 
+        <p>Provides an additional logger for your application in JSON format, which will be feed as input to logstash and visualised from Kibana interface.</p>
+
+
+<p><h2 class="section-heading"></h2></p>
 
 <pre>
-Class ExternalDatabaseConnection < ActiveRecord::Base
-   establish_connection(:secondary)
-   self.table_name = "the_table"
-end
-</pre>
 
-<p><h2 class="section-heading">Usage</h2></p>
-
-<pre>
-ExternalDatabaseConnection.first
-ExternalDatabaseConnection.create(.......)
 </pre>
 
 
@@ -144,37 +135,6 @@ ExternalDatabaseConnection.create(.......)
 self.abstract_class = true
 attr_protected
 </pre>
-
-<p><blockquote>self.abstract_class</blockquote></p>
-<p>This tells ActiveRecord that it shouldn’t look for a table to go with that class</p>
-
-<p><blockquote>attr_protected</blockquote></p>
-<p>This will permit <b>all</b> attributes related to a table without defining it manually, in Rails 4, there must be different way.</p>
-
-<p><blockquote>ExternalDatabaseConnection.table_name = "table1"</blockquote></p>
-<p><b>ExternalDatabaseConnection</b> is ready to serve as in AR object, with the related table set.</p>
-
-<p><h2 class="section-heading">The Problem with dynamic way.</h2></p>
-
-<p>Dynamic way of changing table name, Consider..</p>
-
-<p><pre>
-ExternalDatabaseConnection.table_name = "users"
-ExternalDatabaseConnection.column_names => ["name", "location", "email", "verified"]
-
-ExternalDatabaseConnection.table_name = "posts"
-ExternalDatabaseConnection.column_names => ["name", "location", "email", "verified"]
-</pre></p>
-
-<p>You see the problem there, its shows the attributes of initially set table, hence you no longer hold the instance of new object.</p>
-
-<p><h2 class="section-heading">The Fix.</h2></p>
-
-<pre>
-ExternalDatabaseConnection.reset_column_information 
-</pre>
-
-<p>To override the previous object - table information, reset_column_information method on the class object must be called before setting new table.</p>
 
 
 
