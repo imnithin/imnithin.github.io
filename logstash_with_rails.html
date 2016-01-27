@@ -78,8 +78,8 @@
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                         <div class="post-heading">
-                            <h1>Set-up steps for Logstash and Kibana.</h1>
-                            <h2 class="subheading">Monitoring your application..</h2>
+                            <h1>Logstash and Kibana quick set-up.</h1>
+                            <h2 class="subheading">Monitoring your awesome application..</h2>
                             <!-- <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span> -->
                         </div>
                     </div>
@@ -110,32 +110,60 @@
         <p>Checkout <a href="https://www.elastic.co/products">Products of Elastic</a> </p>
 
 <p>Step1: Install Elasticsearch and automatically start during bootup. </p>
-<p>Step2: Install Logstash and download all the plugins and their set-up.</p>
-<p>Step3: Download Kibana files.</p>
+<p>Step2: Install Logstash and follow installation steps for all plugins.</p>
+<p>Step3: Download Kibana files follow installation steps.</p>
 
 <p>Complete information <a href="https://www.elastic.co/downloads">https://www.elastic.co/downloads</a></p>
 
         <p><h2 class="section-heading">Ruby Gem</h2></p>
-        <p>gem 'logstasher' <a href="https://github.com/shadabahmed/logstasher">https://github.com/shadabahmed/logstasher</a></p>
-        <p>Configure the Rails environment to be monitored accordingly</p> 
-        <p>Provides an additional logger for your application in JSON format, which will be feed as input to logstash and visualised from Kibana interface.</p>
+        <p><a href="https://github.com/shadabahmed/logstasher"> gem 'logstasher'</a></p>
+        <p>Configure the Rails <a href="https://github.com/shadabahmed/logstasher#configure-your-environmentrb-eg-developmentrb"> environment</a> to be monitored accordingly.</p> 
+        <p>It provides an additional logger for your application in JSON format, which will be feed as input to logstash and visualised from Kibana interface.</p>
 
 
-<p><h2 class="section-heading"></h2></p>
 
+<p><h2 class="section-heading">Configure Logstash</h2></p>
+<p>Create a file inside Logstash directory(all plugins) which was downloaded in previous step,<p>
+
+quickstart.conf - set the log path of your application to be monitored.
 <pre>
+input {
+  file { 
+    type => "rails logs"
+    <b>path => "/home/Nithin/rails/project_name/log/logstasher.log"</b>
+    codec =>   json {
+      charset => "UTF-8"
+    }
+  } 
+}
+
+output {
+  # Print each event to stdout.
+  stdout {
+    codec => rubydebug
+  }
+  
+  elasticsearch {
+    # Setting 'embedded' will run  a real elasticsearch server inside logstash.
+    # This option below saves you from having to run a separate process just
+    # for ElasticSearch, so you can get started quicker!
+  }
+}
 
 </pre>
 
+<p>logstasher.log will be your new log file created by logstasher gem.</p>
 
-<p><h2 class="section-heading">Dynamic way of table setting</h2></p>
-<p>In case when table is dynamically set by user. In class you must have to use <p>
+<p><h2 class="section-heading">Start Logstash and Kibana</h2></p>
 
-<pre>
-self.abstract_class = true
-attr_protected
-</pre>
+Make sure logstash is up and running with
+<p><b>sudo service logstash status/start</b></p>
 
+Start the configured logstash agent.
+<p><b>bin/logstash agent -f quickstart.conf</b></p>
+
+<p>Start Kibana for Inferface and visit <a href="http://0.0.0.0:5601"> 0.0.0.0:5601</a></p>
+<p><b>bin/kibana</b></p>
 
 
 </div>
