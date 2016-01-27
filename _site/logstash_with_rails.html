@@ -8,10 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="">
 
-    <meta name="keywords" content="debugging, cron job, whenever, debugging cron job, crontab, capistrano, whenever task">
-    <meta name="description" content="debugging cron job tasks with linux/ubuntu/centos when used with whenever and a capistrano task to automate things during deployment">
+    <meta name="keywords" content="logstash, kibana, elk with rails, logstash integration with rails">
+    <meta name="description" content="having used new relic monitoring for sometime, I tried out logstash which is pretty much interesting and straight forward, clear documentation and actively updated and open-souce.">
 
-    <title>Debugging Cron Job</title>
+    <title>Logstash with Rails application.</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -78,8 +78,8 @@
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                         <div class="post-heading">
-                            <h1>Debugging Cron Jobs with Whenever Gem.</h1>
-                            <h2 class="subheading">Is your program running at scheduled time?</h2>
+                            <h1>Logstash and Kibana quick set-up.</h1>
+                            <h2 class="subheading">Monitoring your awesome application..</h2>
                             <!-- <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span> -->
                         </div>
                     </div>
@@ -93,71 +93,79 @@
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
 
-                    <h2 class="section-heading">First things first.</h2>
+                    <h2 class="section-heading">Prerequisite</h2>
 
-                    <p><b>What is cron?</b> Wiki says - "The software utility Cron is a time-based job scheduler in Unix-like computer operating systems. People who set up and maintain software environments use cron to schedule jobs (commands or shell scripts) to run periodically at fixed times, dates, or intervals"</p>
+                    <p>Elasticsearch - FullText search engine.</p>
+                    <p>Logstash - Store log data and indexing.</p>
+                    <p>Get insights of input, filters and output: -</p>
 
-                    <p><b>What is crontab?</b> It's a file, which contains information about cron job, maintains seperate files for individual users. It is not indended to edit directly.</p>
+                    <iframe width="500" height="345"src="http://www.youtube.com/embed/RuUFnog29M4"></iframe>
 
-                    <p>If you are starting to wonder if this is new to you, checkout <a href="http://railscasts.com/episodes?utf8=%E2%9C%93&search=cron+jobs"> railscasts</a> and <a href="https://github.com/javan/whenever"> whenever.</a></p>
+                    <p>Kibana - Awesome visual dashboard.</p>
+ 
 
-                    <p><h2 class="section-heading">Cron Job and Whenever.</h2></p>
+                    <p><h2 class="section-heading">Download ELK</h2></p>
 
-<p>Consider an example. </p>
 
-schedule.rb
+        <p>Checkout <a href="https://www.elastic.co/products">Products of Elastic</a> </p>
+
+<p>Step1: Install Elasticsearch and automatically start during bootup. </p>
+<p>Step2: Install Logstash and follow installation steps for all plugins.</p>
+<p>Step3: Download Kibana files follow installation steps.</p>
+
+<p>Complete information <a href="https://www.elastic.co/downloads">https://www.elastic.co/downloads</a></p>
+
+        <p><h2 class="section-heading">Ruby Gem</h2></p>
+        <p><a href="https://github.com/shadabahmed/logstasher"> gem 'logstasher'</a></p>
+        <p>Configure the Rails <a href="https://github.com/shadabahmed/logstasher#configure-your-environmentrb-eg-developmentrb"> environment</a> to be monitored accordingly.</p> 
+        <p>It provides an additional logger for your application in JSON format, which will be feed as input to logstash and visualised from Kibana interface.</p>
+
+
+
+<p><h2 class="section-heading">Configure Logstash</h2></p>
+<p>Create a file inside Logstash directory(all plugins) which was downloaded in previous step,<p>
+
+quickstart.conf - set the log path of your application to be monitored.
 <pre>
-set :output, "/application/current/log/cron_log.log"
-every 5.minutes do
-  runner "MyModel.method"
-  command 'date'
-end
+input {
+  file { 
+    type => "rails logs"
+    <b>path => "/home/Nithin/rails/project_name/log/logstasher.log"</b>
+    codec =>   json {
+      charset => "UTF-8"
+    }
+  } 
+}
+
+output {
+  # Print each event to stdout.
+  stdout {
+    codec => rubydebug
+  }
+  
+  elasticsearch {
+    # Setting 'embedded' will run  a real elasticsearch server inside logstash.
+    # This option below saves you from having to run a separate process just
+    # for ElasticSearch, so you can get started quicker!
+  }
+}
+
 </pre>
 
-<p>Writing to custom log would help us debug easily, <a href="https://github.com/javan/whenever/wiki/Output-redirection-aka-logging-your-cron-jobs">for more.</a><b><br/> command 'date'</b> executes current time set on machine, and will be written to cron_log file</p>
+<p>logstasher.log will be your new log file created by logstasher gem.</p>
 
-<p><h2 class="section-heading">Integration with Capistrano.</h2></p>
+<p><h2 class="section-heading">Start Logstash and Kibana</h2></p>
 
-<p>For deployment purpose I have recently used Capistrano 3 also has integration for Whenever check this out <a href="https://github.com/imnithin/capistrano3">github.com/imnithin/capistrano3</a></p>
+Make sure logstash is up and running with
+<p><b>sudo service logstash status/start</b></p>
 
-After this, on every deploy crontab file will be updated.
+Start the configured logstash agent.
+<p><b>bin/logstash agent -f quickstart.conf</b></p>
 
-<p><h2 class="section-heading">Crontab file</h2></p>
+<p>Start Kibana for Inferface and visit <a href="http://0.0.0.0:5601"> 0.0.0.0:5601</a></p>
+<p><b>bin/kibana</b></p>
 
-<p>∴ crontab -l</p>
-
-<pre>
-# Begin Whenever generated tasks for: user_env
-PATH=.......
-
-0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'date >> /home/app_name/current/log/cron_log.log 2>&1'
-
-0,5,10,15,20,25,30,35,40,45,50,55 * * * * /bin/bash -l -c 'cd /home/app_name/releases/RELEASE_ID && script/rails runner -e environment '\''MyModel.method'\'' >> /home/app_name/current/log/cron_log.log 2>&1'
-
-# End Whenever generated tasks for: user_env
-</pre>
-
-<p><b>Note:</b> The RELEASE_ID here will be pointing to latest release, which will be current folder(symblinked). If your crontab has repeatatively listed same task, which might be appending over on every deployment, then your server will be overloaded and will freeze and web server may not respond to any request.</p>
-
-<p><h2 class="section-heading">Useful commands to debug.</h2></p>
-
-<p>There exists a log file path for most activities on linux:<br/><br/>
-<b>/var/log/syslog</b> (Ubuntu).<br/>
-<b>/var/log/cron</b> (CentOs).<br/>
-<b>service cron status</b><br/>
-<br/>
-
-where you can monitor if your cron is running or not.</p>
-
-<ul>
-<li>whenever --help</li>
-<li>crontab -l   #to view and check for duplicates</li>
-<li>crontab -e   #to edit</li>
-<li>crontab -r   #to clear/delete user's crontab</li>
-<li>sudo service cron restart #although not necessarily to be used</li>
-</ul>
-
-<p>So that's it about Whenever and Cron, hope you find it useful.</p>
+<img src="img/kibana_ui.png" height="300" width="800">
 
 </div>
 </div>
