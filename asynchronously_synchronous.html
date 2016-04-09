@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="">
+
+    <meta name="keywords" content="csv download in rails, background process, performance improvement, csv prepare and download, csv prepare and download using delayed job, asynchronously synchronous">
+    <meta name="description" content="Serving a static file is easy, in-case when records are dynamic due to filters, the task of writing lot of data to file kills time and memory.">
+
+    <title>Asynchronously Synchronous</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/clean-blog.min.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+    </head>
+
+    <body>
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+            <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header page-scroll">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="index.html">Start Coding</a>
+                </div>
+
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="index.html">Home</a>
+                        </li>
+                        <li>
+                            <a href="about.html">About</a>
+                        </li>
+<!--                         <li>
+                            <a href="post.html">Sample Post</a>
+                        </li> -->
+                        <li>
+                            <a href="contact.html">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- /.navbar-collapse -->
+            </div>
+            <!-- /.container -->
+        </nav>
+
+        <!-- Page Header -->
+        <!-- Set your background image for this header on the line below. -->
+        <header class="intro-header" style="background-image: url('img/post-bg.jpg')">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                        <div class="post-heading">
+                            <h1>Asynchronously Synchronous.</h1>
+                            <h2 class="subheading">.... the amazing task</h2>
+                            <!-- <span class="meta">Posted by <a href="#">Start Bootstrap</a> on August 24, 2014</span> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Post Content -->
+        <article>
+         <div class="container">
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <p>One of the interesting tasks I have dealt with...</p>
+
+                    <h2 class="section-heading">CSV - prepare and download using Delayed Job Gem.</h2>
+
+
+                    <p>Serving a static file is easy, but when filters are applied and processing large number of records and writing to a file will add up load on server and the user experience isn't that good, to overcome, I used delayed job gem and nailed the feature down. Here's how I went through...</p>
+
+                    <p><h2 class="section-heading">The Synchronous way.</h2></p>
+
+<pre>
+def download
+  csv_string = CSV.generate do |csv|
+    csv << ["ID", .....]
+    @search.each do |site|
+      csv << [site.id, site.so.on....]
+    end
+  end
+  send_data csv_string,
+            :type => 'text/csv',
+            :filename => 'sites_list.csv',
+            :disposition => 'attachment'
+end
+</pre>
+
+        <p>Table size was huge records around 50k+ when requested for all records(sites information here) it holds up my system, so much was the load.</p>
+
+<p>After research and research(that is googling and ..ing) I thought to myself gather yourself and deal with it, you will find a way.</p>
+
+<p><h2 class="section-heading">The delayed job gem.</h2></p>
+
+<p>Having not dealt with background processes before, started with railscasts on delayed job.</p>
+
+<p>Well having fixed it in my mind how to go about this task, I started, but easier said than done.</p>
+
+<p>I would make use of delayed job and prepare the csv file as in background process, just like that the part was done and dusted.</p>
+
+<pre>
+def download
+  ExportCsv.new(@search.to_a.map(&:id), current_user.id).delay.perform
+end
+</pre>
+
+<p>The link/button to download method should be an AJAX call.</p>
+
+<p>The custom class for delayed job operations in lib folder.</p>
+
+export_csv.rb
+<pre>
+class ExportCsv < Struct.new(:site_ids, :user_id)
+
+  def perform
+    sites = Site.where(id: site_ids)
+    CSV.open("tmp/sites_xls/#{user_id}.csv", "w+") do |csv|
+      csv << ["ID", .....]
+      sites.each do |site|
+        csv << [site.id, site.so.on....]
+      end
+    end
+  end
+
+  def after(job)
+    User.find(user_id).update_attributes(csv_download: true)
+  end
+
+  handle_asynchronously :perform
+
+end
+</pre>
+<p>Add new column <b>csv_download</b> for users table.</p>
+<p>Attribute will be set to true once <b>after</b>(method) is executed, which means asynchronously file is generated and residing on the server disk.</p>
+
+<p>So the preparation happens at background so there is no holding up server or my development machine ;).</p>
+
+<p><h2 class="section-heading">The poll function.</h2></p>
+
+<p>But why?</p>
+
+<p>Once the csv preparation is complete the file seems to be in the application path but how to does it inform you its ready and has completed the process of writing to CSV.</p>
+<!-- <p>You see I use ERB.</p> -->
+
+download.js.erb
+<pre>
+  alert('Preparing file to download, you will be notified once its complete...');
+  timeout('<%= SOME_DELAY %>');
+</pre>
+
+<p>So what lies inside timeout function - polls rails method to check is ready to serve, when ready pop's a confirmation box to download.</p>
+
+<pre>
+function timeout(time) {
+    setTimeout(function() {
+        $.ajax({ url: "/controller/check_if_ready?",
+            type : 'GET',
+            dataType : 'json',
+            success: function(response)
+            {
+                if(response.value === "success") {
+                    var value = confirm("File ready to download ?");
+                    if (value == true) {
+                        window.location="/controller/download_csv";
+                    } else if(value == false) {
+                        $.ajax({ url: "/controller/remove_file"})
+                    }
+                }
+                else
+                {
+                    timeout('4000') // wait 4 seconds 
+                }
+            },
+        });
+    }, time);
+}
+</pre>
+
+<p><h2 class="section-heading">The AJAX call.</h2></p>
+<p>check_if_ready?</p>
+<pre>
+def check_if_ready?
+  if current_user.set_csv_download? && File.exist?(@file_path)
+    render json: { value: "success" }
+  else
+    render json: { value: nil }
+  end
+end
+</pre>
+
+<p><h2 class="section-heading">Navigation to different parts of application.</h2></p>
+
+<p>It seems everything's fine but what if the user navigates when the background process is working on CSV.</p>
+
+<p>Update accordingly</p>
+
+download.js.erb
+<pre>
+<% unless session[:set_download] %>
+    alert('Preparing file to download, you will be notified once its complete...');
+  <% session[:set_download] = 1 %>
+    timeout('<%= INITIAL_DELAY %>'); // initial delay.
+<% else %>
+    alert('Wait for the completion of earlier file...');
+<% end %>
+</pre>
+
+<p>Call the function(be it globally) in whichever <b>layout</b> necessary.</p>
+<pre>
+%script
+    - if session[:download]
+      timeout('#{DELAY}'); 
+</pre>
+
+<p>Use a flag attribute(session[:download]) to make poll calls, once the download is complete you can toggle back to falsy value .</p>
+
+<p><h2 class="section-heading">KickStart the background process.</h2></p>
+
+<pre>
+RAILS_ENV=environment nice -n 15 script/delayed_job -n 3 restart
+</pre>
+
+<p><h2 class="section-heading">Final few points</h2></p>
+<ul>
+<li>Delay value can be configured based on count of records to reduce number of ajax calls. But on navigation to different pages(from user) you might also want to have smaller delay, as there can be another request within that delay value. Having a count down timer is a best option.</li>
+<li>Delete the file and reset values afer the download.</li>
+<li>When multiple files are requested to download? I have proceeded by allowing user to make one download request at a time. You might also want to handle this situation.</li>
+<li>Important: On Capistrano deployment process, you will have to restart the delayed job process and make sure no download is in progress. If not handled -
+The Ajax call may get into loop and request may be endless, counter value can be used to fix this and kill the request.</li>
+<li>If user requests for a download and closes the session, it should not be a concern of method call getting into loop, as we have handled calling of Javascript function based on session value.</li>
+</ul>
+
+<p>Finally I'm done with this one, there are some pros and cons I mostly have covered them all in my points. I would love to have your feedback. Oh no comment section up here.</p>
+
+</div>
+</div>
+</div>
+        </article>
+
+<hr>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                    <li>
+                        <a href="https://twitter.com/imnithink">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.facebook.com/imnithink/">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/imnithin">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted"></p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+<script src="js/jquery.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
