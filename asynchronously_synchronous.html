@@ -94,10 +94,12 @@
                     <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
                     <p>One of the interesting tasks I have dealt with...</p>
 
-                    <h2 class="section-heading">CSV - prepare and download using Delayed Job Gem.</h2>
+                    <h2 class="section-heading">CSV - prepare and download using background process.</h2>
 
 
-                    <p>Serving a static file is easy, but when filters are applied and processing large number of records and writing to a file will add up load on server and the user experience isn't that good, to overcome, I used delayed job gem and nailed the feature down. Here's how I went through...</p>
+                    <p>Serving a static file is easy, but when filters are applied on large data set and generating a file will add up load on server and the user experience isn't that good. </p>
+
+                    <p>To overcome the above problem - I used delayed job gem as async process, you could choose any other gems as well. Here's how I went through...</p>
 
                     <p><h2 class="section-heading">The Synchronous way.</h2></p>
 
@@ -116,7 +118,7 @@ def download
 end
 </pre>
 
-        <p>Table size was huge records around 50k+ when requested for all records(sites information here) it holds up my system, so much was the load.</p>
+        <p>Table size was huge, records around 50k+ when requested for all records(sites information here) it holds up my machine, so much was the load.</p>
 
 <p>After research and research(that is googling and ..ing) I thought to myself gather yourself and deal with it, you will find a way.</p>
 
@@ -126,7 +128,7 @@ end
 
 <p>Well having fixed it in my mind how to go about this task, I started, but easier said than done.</p>
 
-<p>I would make use of delayed job and prepare the csv file as in background process, just like that the part was done and dusted.</p>
+<p>Plan was - Make use of background process and prepare the csv file, just like that the part was done and dusted.</p>
 
 <pre>
 def download
@@ -134,11 +136,20 @@ def download
 end
 </pre>
 
-<p>The link/button to download method should be an AJAX call.</p>
+<p>The GET request to download method should be an AJAX call.</p>
 
-<p>The custom class for delayed job operations in lib folder.</p>
 
-export_csv.rb
+download.js.erb
+<pre>
+  alert('Preparing file to download, you will be notified once its complete...');
+  timeout('<%= SOME_DELAY %>'); # Will be explained.
+</pre>
+
+
+
+<p>The custom class for delayed job operations.</p>
+
+lib/export_csv.rb
 <pre>
 class ExportCsv < Struct.new(:site_ids, :user_id)
 
@@ -161,24 +172,18 @@ class ExportCsv < Struct.new(:site_ids, :user_id)
 end
 </pre>
 <p>Add new column <b>csv_download</b> for users table.</p>
-<p>Attribute will be set to true once <b>after</b>(method) is executed, which means asynchronously file is generated and residing on the server disk.</p>
+<p>Attribute will be set to true once <b>after</b>(method) is executed, which means asynchronously file is generated and residing on the server space.</p>
 
-<p>So the preparation happens at background so there is no holding up server or my development machine ;).</p>
+<p>So the preparation happens at background so there is no holding up server.</p>
 
 <p><h2 class="section-heading">The poll function.</h2></p>
 
 <p>But why?</p>
 
-<p>Once the csv preparation is complete the file seems to be in the application path but how to does it inform you its ready and has completed the process of writing to CSV.</p>
+<p>Once the csv preparation is complete the file seems to be in the application directory, so to notify for the client that the file is ready is download.</p>
 <!-- <p>You see I use ERB.</p> -->
 
-download.js.erb
-<pre>
-  alert('Preparing file to download, you will be notified once its complete...');
-  timeout('<%= SOME_DELAY %>');
-</pre>
-
-<p>So what lies inside timeout function - polls rails method to check is ready to serve, when ready pop's a confirmation box to download.</p>
+<p>So what lies inside timeout function - polls rails method to check if file is ready to serve, when ready, pop a confirmation box to download.</p>
 
 <pre>
 function timeout(time) {
@@ -206,7 +211,7 @@ function timeout(time) {
 }
 </pre>
 
-<p><h2 class="section-heading">The AJAX call.</h2></p>
+<p><h2 class="section-heading">The Poll method - Ajax-ify.</h2></p>
 <p>check_if_ready?</p>
 <pre>
 def check_if_ready?
@@ -256,8 +261,8 @@ RAILS_ENV=environment nice -n 15 script/delayed_job -n 3 restart
 <li>Delete the file and reset values afer the download.</li>
 <li>When multiple files are requested to download? I have proceeded by allowing user to make one download request at a time. You might also want to handle this situation.</li>
 <li>Important: On Capistrano deployment process, you will have to restart the delayed job process and make sure no download is in progress. If not handled -
-The Ajax call may get into loop and request may be endless, counter value can be used to fix this and kill the request.</li>
-<li>If user requests for a download and closes the session, it should not be a concern of method call getting into loop, as we have handled calling of Javascript function based on session value.</li>
+The Ajax call may get into loop and request to poll method may be endless, counter value can be used to fix this and kill the request.</li>
+<li>If user requests for a download and closes the session, it should not be a concern of method call to poll getting into loop, as we have handled calling of Javascript function based on session value.</li>
 </ul>
 
 <p>Finally I'm done with this one, there are some pros and cons I mostly have covered them all in my points. I would love to have your feedback. Oh no comment section up here.</p>
